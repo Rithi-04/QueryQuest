@@ -1,0 +1,10 @@
+{
+  "headers": [
+    {
+      "source": "/vendor/sql-wasm.wasm",
+      "headers": [
+        { "key": "Content-Type", "value": "application/wasm" }
+      ]
+    }
+  ]
+}

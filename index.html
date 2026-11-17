@@ -1,101 +1,81 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>SQL Among Us — There’s an Impostor in the Database!</title>
-<link rel="icon" href="data:,">
-<link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0e18">
+  <meta name="description" content="Investigate the ship's logs, follow the evidence, and find the impostor with SQL.">
+  <title>SQL Among Us — Find the Impostor</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/home.css">
 </head>
 <body>
+  <div class="space-glow" aria-hidden="true"></div>
+  <div class="stars" aria-hidden="true"></div>
 
-  <div id="loadingOverlay" class="overlay" role="status" aria-live="polite">
-    <div class="overlay-box">
-      <div class="spinner" aria-hidden="true"></div>
-      <p id="loadingText">Loading SQL engine&hellip;</p>
-    </div>
-  </div>
-
-  <header class="topbar">
-    <button id="sidebarToggle" class="icon-btn" aria-label="Toggle schema panel" aria-expanded="true">&#9776;</button>
-
-    <div class="brand">
-      <span class="brand-title">SQL AMONG US</span>
-      <span class="brand-sub">Investigation Console</span>
-    </div>
-
-    <div class="dataset-picker">
-      <label for="datasetSelect" class="visually-hidden">Dataset</label>
-      <select id="datasetSelect">
-        <option value="main" selected>Main game</option>
-        <option value="demo">Easy demo</option>
-      </select>
-    </div>
-
-    <button id="howToPlayBtn" class="icon-btn" aria-label="How to play">?</button>
+  <header class="site-header">
+    <a class="wordmark" href="./" aria-label="SQL Among Us home">
+      <span class="wordmark-mark" aria-hidden="true">✦</span>
+      <span>SQL <b>AMONG US</b></span>
+    </a>
+    <span class="header-status"><span class="status-dot"></span> SHIP SYSTEMS ONLINE</span>
   </header>
 
-  <div class="dialect-note">
-    <span>Dialect: MySQL-style SQL running on SQLite. Most SELECT syntax works the same.</span>
-    <button id="differencesBtn" class="link-btn">What's different?</button>
-  </div>
+  <main class="hero">
+    <section class="hero-copy" aria-labelledby="hero-title">
+      <p class="eyebrow"><span class="eyebrow-line"></span> AN INVESTIGATION IS UNDERWAY</p>
+      <h1 id="hero-title">THERE'S AN<br><span>IMPOSTOR</span><br>IN THE DATABASE.</h1>
+      <p class="intro">The crew's logs don't add up. Trace the evidence, query the ship's database, and find out who is sabotaging the mission.</p>
 
-  <div id="panelBackdrop" class="panel-backdrop" hidden></div>
-
-  <main class="layout">
-    <aside id="sidebar" class="sidebar">
-      <div class="sidebar-header">
-        <h2>Schema</h2>
-        <span id="tableCount" class="muted-small"></span>
-      </div>
-      <div id="schemaPanel" class="schema-panel" aria-live="polite"></div>
-    </aside>
-
-    <section class="workspace">
-      <div class="editor-toolbar">
-        <button id="runBtn" class="primary-btn" disabled>Run &#9654; <span class="kbd">Ctrl+Enter</span></button>
-        <button id="historyBtn" class="secondary-btn">History</button>
-        <button id="clearEditorBtn" class="secondary-btn">Clear</button>
-        <span id="queryHint" class="muted-small">Only SELECT / WITH statements are allowed.</span>
-      </div>
-
-      <textarea id="sqlInput" class="sql-editor" spellcheck="false"
-        placeholder="SELECT * FROM crewmates LIMIT 10;"
-        aria-label="SQL query editor"></textarea>
-
-      <div id="errorBox" class="error-box" hidden></div>
-
-      <div class="results-toolbar">
-        <span id="resultMeta" class="muted-small">Run a query to see results here.</span>
-        <button id="copyCsvBtn" class="secondary-btn" disabled>Copy as CSV</button>
-      </div>
-
-      <div id="resultsWrap" class="results-wrap">
-        <table id="resultsTable" class="results-table" hidden>
-          <thead id="resultsHead"></thead>
-          <tbody id="resultsBody"></tbody>
-        </table>
-      </div>
+      <a class="start-button" href="console.html">
+        <span class="start-icon" aria-hidden="true">▶</span>
+        <span>START INVESTIGATION</span>
+        <span class="button-arrow" aria-hidden="true">↗</span>
+      </a>
+      <p class="start-note"><span class="keycap">SELECT</span> YOUR CLUES. CONNECT THE TIMELINE.</p>
     </section>
 
-    <aside id="historyPanel" class="history-panel" hidden>
-      <div class="sidebar-header">
-        <h2>Query history</h2>
-        <button id="clearHistoryBtn" class="link-btn">Clear</button>
+    <section class="hero-art" aria-label="A crewmate floating in space">
+      <div class="orbit orbit-one"></div>
+      <div class="orbit orbit-two"></div>
+      <div class="planet" aria-hidden="true"></div>
+      <div class="crewmate" aria-hidden="true">
+        <div class="crew-backpack"></div>
+        <div class="crew-body"><div class="crew-shine"></div></div>
+        <div class="crew-visor"><div class="visor-shine"></div></div>
+        <div class="crew-shadow"></div>
       </div>
-      <ol id="historyList" class="history-list"></ol>
-    </aside>
+      <span class="float-label label-top">WHO WAS WHERE?</span>
+      <span class="float-label label-bottom">TRUST THE LOGS.</span>
+      <span class="orbit-dot dot-one" aria-hidden="true"></span>
+      <span class="orbit-dot dot-two" aria-hidden="true"></span>
+      <span class="orbit-dot dot-three" aria-hidden="true"></span>
+      <span class="art-caption"><span class="caption-dot"></span> CASE FILE 001 &nbsp;·&nbsp; SKELD-7</span>
+    </section>
+
+    <div class="feature-strip" aria-label="How the investigation works">
+      <div class="feature">
+        <span class="feature-number">01</span>
+        <span class="feature-title">SEARCH THE LOGS</span>
+        <span class="feature-detail">Explore the ship's database</span>
+      </div>
+      <div class="feature">
+        <span class="feature-number">02</span>
+        <span class="feature-title">FOLLOW THE EVIDENCE</span>
+        <span class="feature-detail">Connect movements and events</span>
+      </div>
+      <div class="feature">
+        <span class="feature-number">03</span>
+        <span class="feature-title">FIND THE IMPOSTOR</span>
+        <span class="feature-detail">Only the data tells the truth</span>
+      </div>
+      <p class="feature-note"><span class="status-dot"></span> NO INSTALL REQUIRED &nbsp;·&nbsp; RUNS IN YOUR BROWSER</p>
+    </div>
   </main>
 
-  <div id="modalLayer" class="modal-layer" hidden>
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <button id="modalClose" class="icon-btn modal-close" aria-label="Close">&times;</button>
-      <h2 id="modalTitle"></h2>
-      <div id="modalBody"></div>
-    </div>
-  </div>
-
-  <script src="vendor/sql-wasm.js"></script>
-  <script src="js/app.js"></script>
+  <footer class="site-footer">
+    <span>OPERATION SKELD &nbsp; / &nbsp; INVESTIGATION CONSOLE</span>
+    <span>THE SHIP IS COUNTING ON YOU.</span>
+  </footer>
 </body>
 </html>

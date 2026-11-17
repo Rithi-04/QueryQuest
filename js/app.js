@@ -18,20 +18,19 @@
   ];
 
   var DATASETS = {
-    main: { label: "Main game", file: "data/sql_among_us_database.sql" },
-    demo: { label: "Easy demo", file: "data/mini_demo_database.sql" }
+    demo: { label: "Easy demo", file: "data/mini_demo_database.sql" },
+    queryQuest: { label: "Query Quest", file: "data/query_quest_database.sql" }
   };
 
   var state = {
-    currentDataset: "main",
+    currentDataset: "queryQuest",
     datasetText: {},     // cache of fetched .sql file contents
     setupDb: null,       // main-thread SQL.Database, used only for schema introspection
     worker: null,        // Web Worker running the "live" query database
     workerReady: false,
     pendingRequest: null, // { id, timeoutHandle, startTime }
     nextRequestId: 1,
-    history: [],         // [{ sql, time }]
-    lastResults: null    // last results[0] for CSV export
+    history: []          // [{ sql, time }]
   };
 
   // ---------------------------------------------------------------------
@@ -42,6 +41,10 @@
     loadingText: document.getElementById("loadingText"),
     sidebarToggle: document.getElementById("sidebarToggle"),
     sidebar: document.getElementById("sidebar"),
+    fullscreenBtn: document.getElementById("fullscreenBtn"),
+    fullscreenGate: document.getElementById("fullscreenGate"),
+    fullscreenRequiredBtn: document.getElementById("fullscreenRequiredBtn"),
+    fullscreenGateError: document.getElementById("fullscreenGateError"),
     datasetSelect: document.getElementById("datasetSelect"),
     schemaPanel: document.getElementById("schemaPanel"),
     tableCount: document.getElementById("tableCount"),
@@ -50,10 +53,10 @@
     clearEditorBtn: document.getElementById("clearEditorBtn"),
     errorBox: document.getElementById("errorBox"),
     resultMeta: document.getElementById("resultMeta"),
-    copyCsvBtn: document.getElementById("copyCsvBtn"),
     resultsTable: document.getElementById("resultsTable"),
     resultsHead: document.getElementById("resultsHead"),
     resultsBody: document.getElementById("resultsBody"),
+    resultsWrap: document.getElementById("resultsWrap"),
     historyBtn: document.getElementById("historyBtn"),
     historyPanel: document.getElementById("historyPanel"),
     historyList: document.getElementById("historyList"),
@@ -89,6 +92,109 @@
   el.panelBackdrop.addEventListener("click", closeMobilePanels);
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && !el.panelBackdrop.hidden) closeMobilePanels();
+  });
+
+  function showFullscreenError(message) {
+    el.fullscreenGateError.textContent = message;
+    el.fullscreenGateError.hidden = false;
+  }
+
+  function enterFullscreen() {
+    if (!document.documentElement.requestFullscreen) {
+      showFullscreenError("Full screen mode is not supported by this browser.");
+      return;
+    }
+    var request;
+    try {
+      request = document.documentElement.requestFullscreen();
+    } catch (err) {
+      showFullscreenError("Could not enter full screen mode: " + err.message);
+      return;
+    }
+    if (!request || typeof request.catch !== "function") {
+      showFullscreenError("Full screen mode is not supported by this browser.");
+      return;
+    }
+    request.catch(function (err) {
+      showFullscreenError("Could not enter full screen mode: " + err.message);
+    });
+  }
+
+  function updateFullscreenState() {
+    var active = Boolean(document.fullscreenElement);
+    el.fullscreenGate.hidden = active;
+    Array.prototype.forEach.call(document.body.children, function (child) {
+      if (child !== el.fullscreenGate && child.tagName !== "SCRIPT") child.inert = !active;
+    });
+    el.fullscreenBtn.setAttribute("aria-pressed", String(active));
+    el.fullscreenBtn.setAttribute("aria-label", active ? "Exit full screen" : "Enter full screen");
+    el.fullscreenBtn.querySelector("span").textContent = active ? "Exit full screen" : "Full screen";
+    if (active) {
+      el.fullscreenGateError.hidden = true;
+      el.sqlInput.focus();
+    } else {
+      el.fullscreenRequiredBtn.focus();
+    }
+  }
+
+  el.fullscreenRequiredBtn.addEventListener("click", enterFullscreen);
+  el.fullscreenBtn.addEventListener("click", function () {
+    if (!document.fullscreenElement) {
+      enterFullscreen();
+      return;
+    }
+    if (!document.exitFullscreen) {
+      showFullscreenError("Exiting full screen mode is not supported by this browser.");
+      return;
+    }
+    try {
+      document.exitFullscreen().catch(function (err) {
+        showError("Could not exit full screen mode: " + err.message);
+      });
+    } catch (err) {
+      showError("Could not exit full screen mode: " + err.message);
+    }
+  });
+  document.addEventListener("fullscreenchange", updateFullscreenState);
+  updateFullscreenState();
+
+  ["copy", "cut", "paste"].forEach(function (eventName) {
+    el.sqlInput.addEventListener(eventName, function (e) {
+      e.preventDefault();
+    });
+  });
+  el.sqlInput.addEventListener("keydown", function (e) {
+    var key = e.key.toLowerCase();
+    var usesClipboardShortcut = (e.ctrlKey || e.metaKey) &&
+      (key === "c" || key === "x" || key === "v" || key === "insert");
+    var usesShiftInsert = e.shiftKey && key === "insert";
+    if (usesClipboardShortcut || usesShiftInsert) e.preventDefault();
+  });
+  el.sqlInput.addEventListener("drop", function (e) {
+    e.preventDefault();
+  });
+
+  function selectionTouchesResults() {
+    var selection = window.getSelection();
+    if (!selection || selection.isCollapsed) return false;
+    if (el.resultsWrap.contains(selection.anchorNode) || el.resultsWrap.contains(selection.focusNode)) return true;
+    for (var i = 0; i < selection.rangeCount; i++) {
+      if (selection.getRangeAt(i).intersectsNode(el.resultsWrap)) return true;
+    }
+    return false;
+  }
+
+  ["copy", "cut", "paste"].forEach(function (eventName) {
+    document.addEventListener(eventName, function (e) {
+      if (selectionTouchesResults()) e.preventDefault();
+    });
+  });
+  document.addEventListener("keydown", function (e) {
+    var key = e.key.toLowerCase();
+    var usesClipboardShortcut = (e.ctrlKey || e.metaKey) &&
+      (key === "c" || key === "x" || key === "v" || key === "insert");
+    var usesShiftInsert = e.shiftKey && key === "insert";
+    if ((usesClipboardShortcut || usesShiftInsert) && selectionTouchesResults()) e.preventDefault();
   });
 
   // ---------------------------------------------------------------------
@@ -260,10 +366,11 @@
   function boot() {
     setLoading("Loading SQL engine\u2026");
     var engineReady = initSqlJs({ locateFile: function (f) { return "vendor/" + f; } });
-    var dataReady = Promise.all([
-      fetchText(DATASETS.main.file).then(function (t) { state.datasetText.main = t; }),
-      fetchText(DATASETS.demo.file).then(function (t) { state.datasetText.demo = t; })
-    ]);
+    var dataReady = Promise.all(Object.keys(DATASETS).map(function (key) {
+      return fetchText(DATASETS[key].file).then(function (text) {
+        state.datasetText[key] = text;
+      });
+    }));
 
     Promise.all([engineReady, dataReady]).then(function (results) {
       SQLEngine = results[0];
@@ -444,8 +551,6 @@
     el.resultsTable.hidden = true;
     el.resultsHead.innerHTML = "";
     el.resultsBody.innerHTML = "";
-    el.copyCsvBtn.disabled = true;
-    state.lastResults = null;
     showMeta("Run a query to see results here.");
   }
 
@@ -462,15 +567,12 @@
 
     if (!resultSet) {
       el.resultsTable.hidden = true;
-      el.copyCsvBtn.disabled = true;
       showMeta("Query ran, but returned no result set (not a SELECT?).");
-      state.lastResults = null;
       return;
     }
 
     var columns = resultSet.columns;
     var values = resultSet.values;
-    state.lastResults = resultSet;
 
     var headRow = document.createElement("tr");
     columns.forEach(function (c) {
@@ -497,7 +599,6 @@
     });
 
     el.resultsTable.hidden = false;
-    el.copyCsvBtn.disabled = values.length === 0;
   }
 
   function runQuery() {
@@ -594,49 +695,6 @@
     el.sqlInput.focus();
     clearError();
   });
-
-  // ---------------------------------------------------------------------
-  // CSV export
-  // ---------------------------------------------------------------------
-  function toCsv(resultSet) {
-    function escapeCell(v) {
-      if (v === null || v === undefined) return "";
-      var s = String(v);
-      if (/[",\n]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
-      return s;
-    }
-    var lines = [resultSet.columns.map(escapeCell).join(",")];
-    resultSet.values.slice(0, MAX_DISPLAY_ROWS).forEach(function (row) {
-      lines.push(row.map(escapeCell).join(","));
-    });
-    return lines.join("\n");
-  }
-
-  el.copyCsvBtn.addEventListener("click", function () {
-    if (!state.lastResults) return;
-    var csv = toCsv(state.lastResults);
-    var done = function () {
-      var original = el.copyCsvBtn.textContent;
-      el.copyCsvBtn.textContent = "Copied!";
-      setTimeout(function () { el.copyCsvBtn.textContent = original; }, 1200);
-    };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(csv).then(done).catch(function () { fallbackCopy(csv, done); });
-    } else {
-      fallbackCopy(csv, done);
-    }
-  });
-
-  function fallbackCopy(text, done) {
-    var ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed";
-    ta.style.opacity = "0";
-    document.body.appendChild(ta);
-    ta.select();
-    try { document.execCommand("copy"); done(); } catch (e) { /* ignore */ }
-    document.body.removeChild(ta);
-  }
 
   // ---------------------------------------------------------------------
   // History

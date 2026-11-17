@@ -61,7 +61,6 @@
     historyPanel: document.getElementById("historyPanel"),
     historyList: document.getElementById("historyList"),
     clearHistoryBtn: document.getElementById("clearHistoryBtn"),
-    howToPlayBtn: document.getElementById("howToPlayBtn"),
     differencesBtn: document.getElementById("differencesBtn"),
     modalLayer: document.getElementById("modalLayer"),
     modalTitle: document.getElementById("modalTitle"),
@@ -214,16 +213,6 @@
     if (e.key === "Escape" && !el.modalLayer.hidden) closeModal();
   });
 
-  function showHowToPlay() {
-    openModal("How to play", "" +
-      "<ul>" +
-      "<li>Explore the tables in the Schema panel on the left &mdash; click a table name to drop a starter query into the editor.</li>" +
-      "<li>Use <code>SELECT</code> queries to cross-check the logs: who was where, when things happened, who said what.</li>" +
-      "<li>When you're confident, write your final evidence query on paper (or keep it in History) and hand it to the facilitator.</li>" +
-      "</ul>" +
-      "<p class=\"muted-small\">This console only runs queries &mdash; nothing is submitted or scored automatically.</p>");
-  }
-
   function showDifferences() {
     openModal("What's different from real MySQL?", "" +
       "<p class=\"muted-small\">This console runs SQLite under the hood, with a few MySQL-style helpers added. Most <code>SELECT</code> queries behave the same. Known differences:</p>" +
@@ -236,7 +225,6 @@
       "</ul>");
   }
 
-  el.howToPlayBtn.addEventListener("click", showHowToPlay);
   el.differencesBtn.addEventListener("click", showDifferences);
 
   // ---------------------------------------------------------------------
@@ -379,7 +367,6 @@
     }).then(function () {
       hideLoading();
       el.runBtn.disabled = false;
-      showHowToPlay();
     }).catch(function (err) {
       setLoading("Failed to load: " + (err && err.message ? err.message : err));
     });

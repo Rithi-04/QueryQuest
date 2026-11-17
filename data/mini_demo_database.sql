@@ -3,7 +3,6 @@ DROP TABLE IF EXISTS crewmates;
 CREATE TABLE crewmates (
   player_id INT PRIMARY KEY,
   color VARCHAR(60),
-  department VARCHAR(60),
   tasks_assigned INT
 );
 DROP TABLE IF EXISTS rooms;
@@ -52,12 +51,12 @@ CREATE TABLE activity_logs (
   event_type VARCHAR(60),
   details VARCHAR(60)
 );
-INSERT INTO crewmates (player_id, color, department, tasks_assigned) VALUES
-  (1, 'Red', 'Engineering', 3),
-  (2, 'Blue', 'Navigation', 3),
-  (3, 'Green', 'Science', 3),
-  (4, 'Pink', 'Life Support', 3),
-  (5, 'Orange', 'Weapons', 3);
+INSERT INTO crewmates (player_id, color, tasks_assigned) VALUES
+  (1, 'Red', 3),
+  (2, 'Blue', 3),
+  (3, 'Green', 3),
+  (4, 'Pink', 3),
+  (5, 'Orange', 3);
 INSERT INTO rooms (room_id, room_name) VALUES
   (1, 'Cafeteria'),
   (2, 'Electrical'),
